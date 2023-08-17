@@ -7,5 +7,5 @@ run: build
 	_output/userspace-failover
 
 .PHONY: e2e-test
-e2e-test:
+e2e-test: build
 	./test.sh

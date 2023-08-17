@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/netip"
 	"os"
 	"strconv"
@@ -41,5 +42,34 @@ func main() {
 		standbyVLAN = true
 	}
 
-	failover.New(primaryInterface, secondaryInterface, vlanID, ip, arpTargetIP, standbyVLAN).Run()
+	arpInterval := 100
+	if ai, err := strconv.Atoi(os.Getenv("ARP_INTERVAL")); err != nil && ai > 0 {
+		arpInterval = ai
+	}
+
+	arpTimeout := 50
+	if ai, err := strconv.Atoi(os.Getenv("ARP_TIMEOUT")); err != nil && ai > 0 {
+		arpInterval = ai
+	}
+
+	linkMonitorInterval := 100
+	if lmi, err := strconv.Atoi(os.Getenv("LINK_MONITOR_INTERVAL")); err != nil && lmi > 0 {
+		linkMonitorInterval = lmi
+	}
+
+	f := failover.New(primaryInterface, secondaryInterface, vlanID, ip, arpTargetIP, standbyVLAN,
+		arpInterval, arpTimeout, linkMonitorInterval)
+	f.Setup()
+
+	errChan := make(chan error)
+	go func() {
+		errChan <- fmt.Errorf("LinkMonitor exited with error, err: %q", f.LinkMonitor())
+	}()
+	go func() {
+		errChan <- fmt.Errorf("Prober exited with error, err: %q", f.Prober())
+	}()
+	select {
+	case err := <-errChan:
+		klog.Error(err)
+	}
 }
