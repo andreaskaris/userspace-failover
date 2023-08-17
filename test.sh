@@ -40,6 +40,99 @@ ip netns exec failover-source ip link set dev "${SECONDARY_INTERFACE}" up
 # ip netns exec failover-source ip link set dev "${PRIMARY_INTERFACE}"."${VLAN_ID}" up
 # ip netns exec failover-source ip address add dev "${PRIMARY_INTERFACE}"."${VLAN_ID}" "${IP_ADDRESS}/${PREFIX_LEN}"
 
+test() {
+  echo "========================="
+  echo "Sleeping for 5 seconds"
+  echo "========================="
+  sleep 5
+
+  echo ""
+  
+  echo "========================="
+  echo "Disabling primary interface"
+  echo "========================="
+  ip netns exec failover-source ip link set dev "${PRIMARY_INTERFACE}" down
+  sleep 2
+  ip netns exec failover-source ip a
+  
+  echo ""
+
+  echo "========================="
+  echo "Sleeping for 5 seconds"
+  echo "========================="
+  sleep 5
+
+  echo ""
+  
+  echo "========================="
+  echo "Disabling secondary interface"
+  echo "========================="
+  ip netns exec failover-source ip link set dev "${SECONDARY_INTERFACE}" down
+  
+  echo ""
+
+  echo "========================="
+  echo "Sleeping for 5 seconds"
+  echo "========================="
+  sleep 5
+
+  echo ""
+  
+  echo "========================="
+  echo "Enabling secondary interface"
+  echo "========================="
+  ip netns exec failover-source ip link set dev "${SECONDARY_INTERFACE}" up
+  sleep 2
+  ip netns exec failover-source ip a
+  
+  echo ""
+
+  echo "========================="
+  echo "Sleeping for 5 seconds"
+  echo "========================="
+  sleep 5
+
+  echo ""
+  
+  echo "========================="
+  echo "Enabling primary interface"
+  echo "========================="
+  ip netns exec failover-source ip link set dev "${PRIMARY_INTERFACE}" up
+  sleep 2
+  ip netns exec failover-source ip a
+  
+  echo ""
+
+  echo "========================="
+  echo "Disabling secondary interface"
+  echo "========================="
+  ip netns exec failover-source ip link set dev "${SECONDARY_INTERFACE}" down
+  sleep 2
+  ip netns exec failover-source ip a
+
+  echo ""
+  
+  echo "========================="
+  echo "Sleeping for 5 seconds"
+  echo "========================="
+  sleep 5
+
+  echo ""
+  
+  echo "========================="
+  echo "Enabling secondary interface"
+  echo "========================="
+  ip netns exec failover-source ip link set dev "${SECONDARY_INTERFACE}" up
+  sleep 2
+  ip netns exec failover-source ip a
+
+  echo ""
+
+  exit 0
+}
+
+test&
+
 export IP_ADDRESS="${IP_ADDRESS}/${PREFIX_LEN}"
-ip netns exec failover-source "${DIR}"/_output/userspace-failover
-ip netns exec failover-source ip a 
+timeout 60 ip netns exec failover-source "${DIR}"/_output/userspace-failover
+

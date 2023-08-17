@@ -99,11 +99,12 @@ func (f *Failover) LinkMonitor() error {
 			}
 		}
 	}
-	return nil
 }
 
 // Prober runs the prober mechanism.
 func (f *Failover) Prober() error {
+	var lastUpdateTime time.Time
+
 	for {
 		time.Sleep(time.Duration(f.ArpInterval) * time.Millisecond)
 		if f.SendArp() {
@@ -114,13 +115,23 @@ func (f *Failover) Prober() error {
 			f.lastArpTimestamp = time.Now()
 			f.arpState = true
 		} else {
+			// Transition from good ARP state to bad ARP state.
 			if f.arpState {
 				klog.Infof("arping reported failure")
+				lastUpdateTime = time.Now()
+				f.arpState = false
+				continue
+			}
+
+			// ARP state was bad before.
+			if time.Now().Sub(lastUpdateTime) > 1*time.Second {
+				arpDownDuration := time.Now().Sub(f.lastArpTimestamp)
+				klog.Infof("arping still reporting down. ARP is down for %s", arpDownDuration)
+				lastUpdateTime = time.Now()
 			}
 			f.arpState = false
 		}
 	}
-	return nil
 }
 
 // SetupVLANInterface creates the VLAN interface on top of the selected interface.
