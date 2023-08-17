@@ -3,6 +3,7 @@ package main
 import (
 	"net/netip"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/andreaskaris/userspace-failover/pkg/failover"
@@ -20,6 +21,11 @@ func main() {
 		klog.Fatalf("Please provide a secondary interface via SECONDARY_INTERFACE env var")
 	}
 
+	vlanID, err := strconv.Atoi(os.Getenv("VLAN_ID"))
+	if err != nil {
+		klog.Fatal("Please provide a valid VLAN ID via VLAN_ID env var, err: %q", err)
+	}
+
 	ip, err := netip.ParsePrefix(os.Getenv("IP_ADDRESS"))
 	if err != nil {
 		klog.Fatal("Please provide a valid prefix via IP_ADDRESS env var, err: %q", err)
@@ -35,5 +41,5 @@ func main() {
 		standbyVLAN = true
 	}
 
-	failover.New(primaryInterface, secondaryInterface, ip, arpTargetIP, standbyVLAN).Run()
+	failover.New(primaryInterface, secondaryInterface, vlanID, ip, arpTargetIP, standbyVLAN).Run()
 }

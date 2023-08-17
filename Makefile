@@ -1,7 +1,11 @@
 .PHONY: build
 build:
-	go build -o _output/userspace-failover
+	go build -buildvcs=false -o _output/userspace-failover
 
 .PHONY: run
 run: build
 	_output/userspace-failover
+
+.PHONY: e2e-test
+e2e-test:
+	./test.sh
