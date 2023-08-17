@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userspace-failover
+  labels:
+    app: userspace-failover
+spec:
+  selector:
+    matchLabels:
+      app: userspace-failover
+  template:
+    metadata:
+      labels:
+        app: userspace-failover
+      annotations:
+        k8s.v1.cni.cncf.io/networks: netdevice0-ns-default@primary,netdevice0-ns-default@secondary
+    spec:
+      containers:
+      - name: app
+        securityContext:
+          privileged: true
+            # capabilities:
+            #   add:
+            #   - NET_ADMIN
+            #   - NET_RAW
+            #   drop:
+            #   - all
+        image: quay.io/akaris/userspace-failover:latest
+        command:
+          - /bin/bash
+          - -c
+          - |
+            echo "Starting userspace-failover tool"
+            env
+            /usr/local/bin/userspace-failover
+            echo "userspace-failover tool exited unexpectedly, sleeping forever to give time to troubleshoot"
+            sleep infinity
+        env:
+          - name: PRIMARY_INTERFACE
+            value: "primary"
+          - name: SECONDARY_INTERFACE
+            value: "secondary"
+          - name: IP_ADDRESS
+            value: "192.168.123.10/24"
+          - name: ARP_TARGET
+            value: "192.168.123.1"
+          - name: VLAN_ID
+            value: "1234"
+          - name: ARP_INTERVAL
+            value: "1000"
+          - name: ARP_TIMEOUT
+            value: "500"
+          - name: LINK_MONITOR_INTERVAL
+            value: "5000"

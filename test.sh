@@ -8,6 +8,9 @@ export IP_ADDRESS="192.168.123.10"
 export ARP_TARGET="192.168.123.1"
 export PREFIX_LEN="24"
 export VLAN_ID=1234
+export ARP_INTERVAL=200
+export ARP_TIMEOUT=100
+export LINK_MONITOR_INTERVAL=150
 
 ip netns del failover-source
 ip netns del failover-target

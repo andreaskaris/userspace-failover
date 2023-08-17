@@ -52,8 +52,9 @@ func New(primaryInterface, secondaryInterface string, vlanID int, ip netip.Prefi
 
 // Setup sets up the failover daemon.
 func (f *Failover) Setup() {
-	klog.Infof("Running failover daemon with ... PrimaryInterface: %s, SecondaryInterface: %s, VLAN ID: %d, IP: %s, arpTarget: %s, standbyVLANMode: %t",
-		f.PrimaryInterface, f.SecondaryInterface, f.VLANID, f.IP, f.ArpTarget, f.StandbyVLANMode)
+	klog.Infof("Running failover daemon with ... PrimaryInterface: %s, SecondaryInterface: %s, VLAN ID: %d, IP: %s, linkMonitorInterval: %d, arpTarget: %s, arpInterval: %d, arpTimeout: %d, standbyVLANMode: %t",
+		f.PrimaryInterface, f.SecondaryInterface, f.VLANID, f.IP,
+		f.LinkMonitorInterval, f.ArpTarget, f.ArpInterval, f.ArpTimeout, f.StandbyVLANMode)
 
 	// Keep track of our active interface (the one holding the VLAN).
 	f.activeInterface = InterfacePrimary
@@ -86,6 +87,12 @@ func (f *Failover) LinkMonitor() error {
 
 		// Otherwise, if the active interface is down, failover to the inactive interface.
 		if !f.LinkUp(f.activeInterface) {
+			toInterface := f.PrimaryInterface
+			if f.activeInterface == InterfacePrimary {
+				toInterface = f.SecondaryInterface
+			}
+			klog.Infof("Moving VLAN to interface %s", toInterface)
+
 			if err := f.RemoveVLANInterface(f.activeInterface); err != nil {
 				return fmt.Errorf("error removing VLAN interface during failover, err: %q", err)
 			}

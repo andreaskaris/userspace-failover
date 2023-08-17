@@ -43,17 +43,17 @@ func main() {
 	}
 
 	arpInterval := 100
-	if ai, err := strconv.Atoi(os.Getenv("ARP_INTERVAL")); err != nil && ai > 0 {
+	if ai, err := strconv.Atoi(os.Getenv("ARP_INTERVAL")); err == nil && ai > 0 {
 		arpInterval = ai
 	}
 
 	arpTimeout := 50
-	if ai, err := strconv.Atoi(os.Getenv("ARP_TIMEOUT")); err != nil && ai > 0 {
-		arpInterval = ai
+	if at, err := strconv.Atoi(os.Getenv("ARP_TIMEOUT")); err == nil && at > 0 {
+		arpTimeout = at
 	}
 
 	linkMonitorInterval := 100
-	if lmi, err := strconv.Atoi(os.Getenv("LINK_MONITOR_INTERVAL")); err != nil && lmi > 0 {
+	if lmi, err := strconv.Atoi(os.Getenv("LINK_MONITOR_INTERVAL")); err == nil && lmi > 0 {
 		linkMonitorInterval = lmi
 	}
 
