@@ -19,12 +19,6 @@ spec:
       - name: app
         securityContext:
           privileged: true
-            # capabilities:
-            #   add:
-            #   - NET_ADMIN
-            #   - NET_RAW
-            #   drop:
-            #   - all
         image: quay.io/akaris/userspace-failover:latest
         command:
           - /bin/bash
@@ -51,4 +45,4 @@ spec:
           - name: ARP_TIMEOUT
             value: "500"
           - name: LINK_MONITOR_INTERVAL
-            value: "5000"
+            value: "100"
